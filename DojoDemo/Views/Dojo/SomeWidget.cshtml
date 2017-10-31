@@ -1,0 +1,110 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Demo: Custom Widget</title>
+    <link href="~/Content/widget/css/AuthorWidget.css" rel="stylesheet" />
+
+    <style>
+        /* Any demo specific styling needed for this tutorial only */
+
+        .someWidget {
+            border: 1px solid #999;
+        }
+
+        .someWidgetTitle {
+            background-color: #efefef;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .someWidgetContainer {
+            margin: 1em;
+            border: 1px solid #ccc;
+            padding: 1em;
+        }
+    </style>
+</head>
+<body class="claro">
+
+
+
+    <!-- Stackla Widget Embed Code (start) -->
+    <div class="stackla-widget" data-alias="episerver-sandbox.stackla.com" data-ct="" data-hash="596867e371e96" data-id="26688" data-title="Italk Widget Grid" data-ttl="30" style="width: 100%; overflow: hidden;"></div>
+    <script type="text/javascript">
+        (function (d, id) {
+            var t, el = d.scripts[d.scripts.length - 1].previousElementSibling;
+            if (el) el.dataset.initTimestamp = (new Date()).getTime();
+            if (d.getElementById(id)) return;
+            t = d.createElement('script');
+            t.src = '//assetscdn.stackla.com/media/js/widget/fluid-embed.js';
+            t.id = id;
+            (d.getElementsByTagName('head')[0] || d.getElementsByTagName('body')[0]).appendChild(t);
+        }(document, 'stackla-widget-js'));
+    </script>
+    <!-- Stackla Widget Embed Code (end) -->
+
+
+
+    <h1>Demo: Using _TemplatedMixin</h1>
+    <div data-dojo-type="customWidget/SomeWidget" data-dojo-props="title:'Our Some Widget'">
+        <div>Don't forget to click on the title!</div>
+        <p>This is arbitrary content!</p>
+        <button data-dojo-type="dijit/form/Button">My Button</button>
+        <p>More arbitrary content!</p>
+    </div>
+
+
+    <!-- Configure Dojo -->
+    <script>
+        // We're specifying our Dojo Configuration this way,
+        // as it's a bit more complex and easier to type out
+        // than a data-dojo-config string
+        var dojoConfig = (function () {
+            var base = location.href.split("/");
+            base.pop();
+            base = base.join("/");
+            return {
+                async: true,
+                isDebug: true,
+               packages: [
+                // Any references to defined modules should load locally , not from CDN
+                {
+                     name: "customWidget",
+                    location : '@string.Format("{0}://{1}{2}/Content/widget", Request.Url.Scheme, Request.Url.Authority, Url.Content("~"))'
+                }
+                ],
+            };
+        })();
+
+    </script>
+    <!-- load dojo -->
+    <script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"></script>
+
+    <script>
+        // Bring in our custom widget
+        require([
+            "dojo/parser",
+            "dojo/request",
+            "dojo/dom",
+            "dojo/_base/array",
+            "dojo/on",
+            "customWidget/SomeWidget",
+
+// ignore
+            "dijit/form/Button",
+            "dojo/domReady!"
+        ], function (parser,request, dom, arrayUtil, on, SomeWidget ) {
+
+            var baseUrl = '@string.Format("{0}://{1}{2}/", Request.Url.Scheme, Request.Url.Authority, Url.Content("~"))';
+            parser.parse();
+        });
+    </script>
+
+</body>
+</html>

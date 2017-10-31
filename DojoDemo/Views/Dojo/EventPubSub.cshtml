@@ -1,0 +1,103 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Demo: Dojo Event PubSub</title>
+</head>
+
+<body>
+
+    <button id="alertButton">Alert the user</button>
+    <button id="createAlert">Create another alert button</button>
+
+    <!-- Config Dojo first -->
+    <script>
+
+        dojoConfig = {
+            async :true,
+            has: {
+                "dojo-firebug": true,
+                "dojo-debug-messages": true
+            },
+            // Dont parse the page
+            parseOnLoad: false,
+            // set locale
+            locale: location.search.match(/locale=([\w\-]+)/) ? RegExp.$1 : "en-us" ,
+            packages: [
+                // Any references to defined modules should load locally , not from CDN
+                {
+                    name : "demo",
+                    location : '@string.Format("{0}://{1}{2}/demo", Request.Url.Scheme, Request.Url.Authority, Url.Content("~"))'
+                }
+            ],
+            // timeout afer 10 seconds waiting for completed loading other modules
+            waitSeconds: 10,
+            // shorten module name
+            map: {
+                // instead of having to type "dojo/domReady" we just want 'ready!' instead
+                "*": {
+                    ready: "dojo/domReady"
+                }
+            },
+            // get 'fresh' resource , Avoid module caching
+            cacheBust: true,
+            // use this property so that we can reference later via dojo.config
+            app: {
+                userName: "quantran"
+            }
+        };
+
+    </script>
+
+    <!-- Load Dojo From CDN -->
+    <script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"></script>
+
+    <!-- load defined-modules , write some features -->
+    <script>
+
+        require(["dojo/on", "dojo/topic", "dojo/dom-construct", "dojo/dom", "dojo/domReady!"]
+            , function (on, topic, domConstruct, dom) {
+
+                var alertButton = dom.byId("alertButton");
+                var createAlert = dom.byId("createAlert");
+
+                on(alertButton, "click", function () {
+                    // when this button is clicked
+                    // publish to the "alertUser" topic
+                    topic.publish("alertUser", "This message from Alert User Topic");
+                });
+
+
+                on(createAlert, "click", function (evt) {
+                    // create another buttno
+                    var anotherButton = domConstruct.create("button", {
+                        innerHTML : "Another alert button"
+                    }, createAlert, "after");
+
+                    // when the other button is click 
+                    // publish to the "alertUser" topic
+
+                    on(anotherButton, "click", function (evt) {
+                        topic.publish("alertUser", "This message from Alert User Topic (AnotherButton is clicked)" );
+                    });
+
+                });
+
+                // register the alerting routine with the "alertUser" topic
+                topic.subscribe("alertUser", function (text) {
+                    alert(text);
+                });
+
+            });
+
+
+    </script>
+
+
+</body>
+</html>

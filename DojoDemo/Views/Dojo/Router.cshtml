@@ -1,0 +1,199 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome</title>
+    <link rel="stylesheet" href="https://dojotoolkit.org/documentation/tutorials/1.10/hash/demos/style.css">
+    <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/resources/dojo.css" />
+    <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dijit/themes/claro/claro.css" />
+    <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojox/grid/resources/claroGrid.css" media="screen">
+    <style>
+        table thead tr th {
+            background-color: #ff3;
+        }
+    </style>
+</head>
+<body class="claro">
+    <h3>User Information</h3>
+    <br>
+    <div id="grid"></div>
+    <br>
+    <h3>Change User</h3>
+    <select id="users"></select>
+    <br><br>
+    <button id="btnResetGrid">Reset Grid</button>
+    <br>
+<textarea id="loadTimeTextBox" style="width: 26em; height: 7em; margin-top: 5em;"></textarea>
+
+
+    <!-- -------- Embeded Stackla GoConnect -->
+    <div id='stackla-goconnect-widget' data-widget-id="59687c48262ec"></div>
+    <script type='text/javascript'>
+        (function (d) {
+            // embed.js CDN
+            var cdn = window.StacklaGoConnectConfig ? window.StacklaGoConnectConfig.cdn : 'goconnect.stackla.com';
+            var t = d.createElement('script');
+            t.type = 'text/javascript';
+            t.src = 'https://' + cdn + '/media/js/common/plugin_goconnect_embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(t);
+        }(document));
+    </script>
+
+
+    <!-- Stackla Widget Embed Code (start) -->
+    <div class="stackla-widget" data-alias="episerver-sandbox.stackla.com" data-ct="" data-hash="596864641e118" data-id="26687" data-title="Italk Coffee Wiget" data-ttl="30" style="width: 100%; overflow: hidden;"></div>
+    <script type="text/javascript">
+        (function (d, id) {
+            var t, el = d.scripts[d.scripts.length - 1].previousElementSibling;
+            if (el) el.dataset.initTimestamp = (new Date()).getTime();
+            if (d.getElementById(id)) return;
+            t = d.createElement('script');
+            t.src = '//assetscdn.stackla.com/media/js/widget/fluid-embed.js';
+            t.id = id;
+            (d.getElementsByTagName('head')[0] || d.getElementsByTagName('body')[0]).appendChild(t);
+        }(document, 'stackla-widget-js'));
+    </script>
+    <!-- Stackla Widget Embed Code (end) -->
+
+    <!-- Stackla Widget Embed Code (start) -->
+    <div class="stackla-widget" data-alias="episerver-sandbox.stackla.com" data-ct="" data-hash="596884178e251" data-id="26690" data-title="Quan Tran Widget Feed" data-ttl="30" style="width: 100%; overflow: hidden;"></div>
+    <script type="text/javascript">
+        (function (d, id) {
+            var t, el = d.scripts[d.scripts.length - 1].previousElementSibling;
+            if (el) el.dataset.initTimestamp = (new Date()).getTime();
+            if (d.getElementById(id)) return;
+            t = d.createElement('script');
+            t.src = '//assetscdn.stackla.com/media/js/widget/fluid-embed.js';
+            t.id = id;
+            (d.getElementsByTagName('head')[0] || d.getElementsByTagName('body')[0]).appendChild(t);
+        }(document, 'stackla-widget-js'));
+    </script>
+    <!-- Stackla Widget Embed Code (end) -->
+
+    <!-- load dojo and provide config via data attribute -->
+    <script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1"></script>
+    <script>
+        require(["dojo/request",
+            "dojo/router",
+            "dojo/store/Memory",
+            "dojox/grid/DataGrid",
+            "dojo/data/ObjectStore",
+            "dojo/_base/array",
+            "dijit/form/Select",
+            "dojo/hash",
+            "dojo/on",
+            "dojo/dom"
+        ], function (request, router, Memory, DataGrid, ObjectStore, arrayUtil, Select, hash , on , dom) {
+            var store = new Memory(), userSelect, grid;
+            var _allUsers = [];
+
+            // register btnRestoreGrid click
+            var btnResetGrid = dom.byId("btnResetGrid");
+
+            on(btnResetGrid, "click", function () {
+                console.log(_allUsers);
+                var userStore = new ObjectStore({ objectStore: new Memory({ data: _allUsers }) });
+                grid.setStore(userStore);
+            });
+
+            var baseUrl = '@string.Format("{0}://{1}{2}/", Request.Url.Scheme, Request.Url.Authority, Url.Content("~"))';
+
+            // AJAX to our user JSON information
+            request(baseUrl +  "users.json", {
+                handleAs: "json"
+            }).then(function (data) {
+
+                // change the id to be a string value
+                // is this necessary?  it seems like the userSelect.set("value", 2) wouldn't work
+                // without this being a string
+                arrayUtil.forEach(data, function (user) {
+                    user.id = "" + user.id;
+                    _allUsers.push(user);
+                });
+
+                console.log(data);
+
+                // Set the store data to the users
+                store.setData(data);
+
+                // Create the select
+                userSelect = new Select({
+                    store: new ObjectStore({ objectStore: store, labelProperty: "fullName" })
+                }, "users");
+
+                // On user change, we should go to the new hash
+                userSelect.on("change", function () {
+                    var id = hash().replace(/[^\d]/gi, ""),
+                        selected = this.get("value");
+
+                    // If it we're already looking at the selected user, exit
+                    // Otherwise, this will infinitely loop page loads
+                    if (id == selected) {
+                        return false;
+                    }
+
+                    // Go to the user
+                    router.go("/user/" + selected);
+                });
+
+                userSelect.startup();
+
+                // ----------------------------- Create the DataGrid
+                grid = new DataGrid({
+                    store: new ObjectStore({ objectStore: store }),
+                    autoHeight: true,
+                    autoWidth: true,
+                    structure: [{
+                        name: "First Name",
+                        field: "firstName",
+                        width: "200px"
+                    }, {
+                        name: "Last Name",
+                        field: "lastName",
+                        width: "200px"
+                    }, {
+                        name: "Email Address",
+                        field: "email",
+                        width: "200px"
+                    }],
+                    canSort: function () {
+                        return false;
+                    },
+                    selectionMode: "none"
+                }, "grid");
+
+                grid.startup();
+
+                console.log(grid);
+
+                // ------------------------ Register the hash change for user select
+                // Here `:id` will map to params.id on the event
+                router.register("/user/:id", function (e) {
+                    var user = store.get(e.params.id),
+
+                        // Is there a better way to do this?
+                        userStore = new ObjectStore({ objectStore: new Memory({ data: [user] }) });
+
+                    grid.setStore(userStore);
+
+                    // Change the value of the select to match the curently selected user
+                    userSelect.set("value", user.id);
+                });
+
+                router.startup();
+
+            }); // end ajax request
+        });
+    </script>
+
+    <script>
+        document.getElementById("loadTimeTextBox").value = "Page loaded at " + new Date() +
+            "\nNotice that this doesn't change as you click links - content is being loaded dynamically without reloading the page";
+    </script>
+
+</body>
+</html>

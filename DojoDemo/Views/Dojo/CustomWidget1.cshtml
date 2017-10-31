@@ -1,0 +1,87 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Demo: Custom Widget</title>
+    <link href="~/Content/widget/css/AuthorWidget.css" rel="stylesheet" />
+</head>
+<body>
+    <h1>Demo: Custom Widget</h1>
+    <div id="authorContainer"></div>
+    <!-- Configure Dojo -->
+    <script>
+        // We're specifying our Dojo Configuration this way,
+        // as it's a bit more complex and easier to type out
+        // than a data-dojo-config string
+        var dojoConfig = (function () {
+            var base = location.href.split("/");
+            base.pop();
+            base = base.join("/");
+            return {
+                async: true,
+                isDebug: true,
+               packages: [
+                // Any references to defined modules should load locally , not from CDN
+                {
+                     name: "customWidget",
+                    location : '@string.Format("{0}://{1}{2}/Content/widget", Request.Url.Scheme, Request.Url.Authority, Url.Content("~"))'
+                }
+                ],
+            };
+        })();
+
+    </script>
+    <!-- load dojo -->
+    <script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"></script>
+
+    <script>
+        // Bring in our custom widget
+        require([
+            "dojo/request",
+            "dojo/dom",
+            "dojo/_base/array",
+            "dojo/on",
+            "customWidget/AuthorWidget",
+            "dojo/domReady!"
+        ], function (request, dom, arrayUtil, on, AuthorWidget) {
+
+            var baseUrl = '@string.Format("{0}://{1}{2}/", Request.Url.Scheme, Request.Url.Authority, Url.Content("~"))';
+
+            //var changeAvatar = function (evt) {
+            //    console.log(evt);
+            //};
+
+            // Load up our authors
+            request(baseUrl + "content/data/authors.json", {
+                handleAs: "json"
+            }).then(function (authors) {
+                // Get a reference to our container
+                var authorContainer = dom.byId("authorContainer");
+                arrayUtil.forEach(authors, function (author) {
+                    // Create our widget and place it
+                    var widget = new AuthorWidget(author).placeAt(authorContainer);
+
+                    widget.on("click", function () {
+                        widget.set('avatar', baseUrl + 'content/widget/images/defaultAvatar.png');
+                        console.log(widget.get('name'));
+                        widget.set("name", "New Name");
+                    });
+
+                    //on(widget, "click", function () {
+                    //    // when this button is clicked
+                    //    // publish to the "alertUser" topic
+                    //    topic.publish("alertUser", "This message from Alert User Topic");
+                    //});
+
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>

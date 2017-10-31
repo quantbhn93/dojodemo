@@ -1,0 +1,104 @@
+﻿
+@{
+    Layout = null;
+    ViewBag.Title = "Config";
+}
+
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Demo: Dojo Config</title>
+
+</head>
+<body>
+
+    <!-- Config Dojo first -->
+    <script>
+
+        dojoConfig = {
+            async :true,
+            has: {
+                "dojo-firebug": true,
+                "dojo-debug-messages": true
+            },
+            // Dont parse the page
+            parseOnLoad: false,
+            // set locale
+            locale: location.search.match(/locale=([\w\-]+)/) ? RegExp.$1 : "en-us" ,
+            packages: [
+                // Any references to defined modules should load locally , not from CDN
+                {
+                    name : "demo",
+                    location : '@string.Format("{0}://{1}{2}/demo", Request.Url.Scheme, Request.Url.Authority, Url.Content("~"))'
+                }
+            ],
+            // timeout afer 10 seconds waiting for completed loading other modules
+            waitSeconds: 10,
+            // shorten module name
+            map: {
+                // instead of having to type "dojo/domReady" we just want 'ready!' instead
+                "*": {
+                    ready: "dojo/domReady"
+                }
+            },
+            // get 'fresh' resource , Avoid module caching
+            cacheBust: true,
+            // use this property so that we can reference later via dojo.config
+            app: {
+                userName: "quantran"
+            }
+        };
+
+    </script>
+
+    <!-- Load Dojo From CDN -->
+    <script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"></script>
+
+    <!-- load defined-modules , write some features -->
+    <script>
+
+        require([
+            "demo/myModule",
+            "dojo/parser",
+            "dojo/date/locale",
+            "dijit/Dialog",
+            "dijit/registry",
+            "dojo/json",
+            "dojo/_base/config",
+            "dojo/_base/window",
+            //"dojo/i18n",
+            "dojo/io-query",
+            "dojo/_base/lang",
+            "ready!"
+        ], function (myModule, parser, locale, Dialog, registry, JSON, config, win, ioQuery, lang) {
+            //parser.parse();
+
+            // pull configuration from the query string
+            // and mix it into our app config
+            // => append string '?locale=vi-VN' after URL to see how it affects to local settings
+            console.log(location.search);
+            var queryParams = ioQuery.queryToObject(location.search.substring(1));
+            lang.mixin(config.app, queryParams);
+
+            var now = new Date();
+            var dialog = new Dialog({
+                id: "dialog",
+                title: "Welcome : " + config.app.userName + ", Today," + locale.format(now, {
+                    formatLength: "full",
+                    selector: "date"
+                })
+            }).placeAt(win.body());
+
+            dialog.startup();
+            dialog.set("content", "<pre>" + JSON.stringify(config, null, "\t"));
+            dialog.show();
+
+
+        });
+
+    </script>
+
+
+</body>
+</html>

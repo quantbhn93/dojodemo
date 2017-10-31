@@ -1,0 +1,61 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Demo: Dojo Aspect / AOP</title>
+</head>
+
+<body>
+
+    <!-- Load Dojo From CDN -->
+    <script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"></script>
+
+    <!-- load defined-modules , write some features -->
+    <script>
+
+        require(['dojo/aspect', "dojo/domReady!"]
+            , function (aspect) {
+
+                var rand = {
+                    getNumber: function (min, max) {
+                        return Math.floor(Math.random() * (max - min + 1)) + min;
+                    }
+                };
+
+                aspect.before(rand, "getNumber", function (min, max) {
+                    console.log("original arguments : " + min + " , " + max);
+                    return [6, 16];
+                });
+
+                aspect.after(rand, "getNumber", function (value) {
+                    console.log("actual Result : " + value);
+                    return 4;
+                });
+
+                aspect.around(rand, 'getNumber', function (origMethod) {
+                    return function (min, max) {
+                        console.log("around before.....");
+                        if (min === max) {
+                            console.log('not calling original method');
+                            return min;
+                        }
+                        // only call the original method if min !== max
+                        return origMethod(min, max);
+                    };
+                });
+
+                console.log("returned result : " + rand.getNumber(3, 12));
+
+            });
+
+
+    </script>
+
+
+</body>
+</html>

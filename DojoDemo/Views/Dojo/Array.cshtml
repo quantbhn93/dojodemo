@@ -1,0 +1,81 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Demo: Dojo Array</title>
+</head>
+
+<body>
+
+    <p>
+        The following lists' items are created by looping through an array of strings
+    </p>
+    <ul id="list1"></ul>
+    <ul id="list2"></ul>
+
+
+    <!-- Load Dojo From CDN -->
+    <script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1"></script>
+
+    <!-- load defined-modules , write some features -->
+    <script>
+        require(['dojo/_base/array', "dojo/dom-construct", "dojo/dom", "dojo/domReady!"]
+            , function (arrayUtil, domConstruct, dom) {
+
+                var array = ["one", "two", "three", "four"];
+                var list1 = dom.byId("list1");
+                var list2 = dom.byId("list2");
+
+                var myObject = {
+                    prefix: "ITEM: ",
+                    formatItem: function (item, index) {
+                        return this.prefix + item + " (" + index + ")";
+                    },
+                    outputItems: function (arr, node) {
+                        arrayUtil.forEach(arr, function (item, index) {
+                            domConstruct.create("li", {
+                                innerHTML : this.formatItem(item, index)
+                            }, node);
+                        }, this);
+                    }
+                };
+
+                // skip over index 4, leaving it undefined
+                array[5] = "six";
+
+                arrayUtil.forEach(array, function (item, index) {
+                    // this function is called for every item in array
+                    if (index == 3) {
+                        // this change the original array
+                        // which changess item passed to the sixth invocation of this function
+                        array[5] = "seven";
+                    }
+
+                    if (index == 5) {
+                        // just loop through a copy of array so this wont change the value of array[5]
+                        // in original array
+                        item = "change value of item[5]";
+                        console.log(item);
+                    }
+
+                    domConstruct.create("li", {
+                        innerHTML : item + " (" + index + ")"
+                    }, list1);
+
+                });
+
+                myObject.outputItems(array, list2);
+                console.log(array);
+
+
+            });
+    </script>
+
+
+</body>
+</html>

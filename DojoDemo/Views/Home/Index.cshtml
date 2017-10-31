@@ -1,0 +1,44 @@
+﻿@{
+    ViewBag.Title = "Demo Dojo JS Framework";
+}
+
+<div class="row">
+    <div class="col-md-4">
+
+        <h1 id="greeting">Dojo</h1>
+
+        <h1 id="greeting2">Dojo 2</h1>
+
+    </div>
+
+</div>
+
+@section scripts {
+    <script>
+        require([
+            'dojo/dom',
+            'dojo/dom-construct',
+            'dojo/fx',
+            'demo/myModule',
+            'dojo/domReady!'
+        ], function (dom, domConstruct, fx, myModule) {
+
+            var greetingNode = dom.byId('greeting');
+            domConstruct.place('<em> Embbed !</em>', greetingNode);
+
+            myModule.setText('greeting2', 'Asynchronous Dojo Module!');
+
+            setTimeout(function () {
+                myModule.restoreText('greeting2');
+            }, 3000);
+
+            //  with an animation!
+            fx.slideTo({
+                node: greetingNode,
+                top: 150,
+                left: 20
+            }).play();
+
+        });
+    </script>
+}
