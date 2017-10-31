@@ -16,6 +16,7 @@ namespace DojoDemo.Controllers
         public ActionResult Config()
         {
             return View();
+			
         }
 
         public ActionResult Modern ()
